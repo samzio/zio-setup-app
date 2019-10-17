@@ -48,10 +48,7 @@ class App extends Component {
     }
   }
 
-
-
   readAllFlashData = async () => {
-    await this.flashEEPROM();
     console.log("Reading Flash Data..");
     //---- Bluetooth Advertising Length
     let bluetoothAdvertisingLengthChar = await this.getFlashData(0); // 0 = 0x00000
@@ -60,6 +57,7 @@ class App extends Component {
     let bluetoothAdvertisingLengthVal = await bluetoothAdvertisingLength.getUint32();
     //console.log("BLA LENGTH (Uint32):", bluetoothAdvertisingLengthVal);
     bluetoothAdvertisingLengthVal = bluetoothAdvertisingLengthVal > 32 ? 32 : bluetoothAdvertisingLengthVal;
+    console.log(bluetoothAdvertisingLengthVal);
     //---- Bluetooth Advertising Name
     let numCharsDecoded = 0;
     let bluetoothAdvertisingName = '';
@@ -102,7 +100,7 @@ class App extends Component {
     let hardwareRevisionChar = await this.getFlashData(19);
     let hardwareRevision = await hardwareRevisionChar.readValue();
     let hardwareRevisionVal = buf2Hex(await hardwareRevision.buffer);
-    console.log("v"+ parseInt(hardwareRevisionVal[0]+hardwareRevisionVal[1], 16)+'.'+ parseInt(hardwareRevisionVal[2]+hardwareRevisionVal[3], 16)+'.'+ parseInt(hardwareRevisionVal[4]+hardwareRevisionVal[5], 16));
+    let hardwareRevisionString = "v"+ parseInt(hardwareRevisionVal[0]+hardwareRevisionVal[1], 16)+'.'+ parseInt(hardwareRevisionVal[2]+hardwareRevisionVal[3], 16)+'.'+ parseInt(hardwareRevisionVal[4]+hardwareRevisionVal[5], 16);
     //---- Manufacturer ID
     let manufacturerIDChar = await this.getFlashData(20);
     let manufacturerID = await manufacturerIDChar.readValue();
@@ -152,13 +150,14 @@ class App extends Component {
     let standbyVal = await standby.getUint32();
     this.setState({
       loading: false, 
-      blutoothAdvertisingLength: bluetoothAdvertisingLengthVal, 
+      bluetoothAdvertisingLength: bluetoothAdvertisingLengthVal, 
       bluetoothAdvertisingName,
       serialNumberLength: serialNumberLengthVal,
       serialNumber,
       deviceModelLength: deviceModelLengthVal,
       deviceModel,
       hardwareRevision: hardwareRevisionVal,
+      hardwareRevisionString,
       manufacturerID: manufacturerIDVal,
       organizationID: organizationIDVal,
       batchID: batchIDVal,
@@ -205,9 +204,45 @@ class App extends Component {
     });
   }
 
+  //Handling Input Change
+  handleChange = (e) => {
+    this.setState({[e.target.name] : e.target.value});
+  }
+
+  writeFlashData = async (address, value) => {
+    try {
+      let buffer = new ArrayBuffer(4);
+      let dv = new DataView(buffer);
+      dv.setUint32(0, address, false);
+      let flashAddress = await this.state.currentService.getCharacteristic('16d30bcf-f148-49bd-b127-8042df63ded0');
+      await flashAddress.writeValue(dv.buffer);
+      buffer = new ArrayBuffer(4);
+      dv = new DataView(buffer);
+      dv.setUint32(0, parseInt(value), false);
+      let flashData = await this.state.currentService.getCharacteristic('16d30bd0-f148-49bd-b127-8042df63ded0');
+      console.log(dv);
+      await flashAddress.writeValue(dv.buffer);
+      buffer = new ArrayBuffer(1);
+      dv = new DataView(buffer);
+      dv.setUint8(0, 6, false);
+      let writeFlash = await this.state.currentService.getCharacteristic('16d30bc8-f148-49bd-b127-8042df63ded0');
+      console.log(dv);
+      await flashAddress.writeValue(dv.buffer);
+      console.log("yes");
+    } catch(e) {
+      console.error(e);
+    } 
+  }
+
+  updateAllFlashData = async () =>  {
+    await this.flashEEPROM();
+    await this.writeFlashData(0, this.state.bluetoothAdvertisingLength)
+    await this.readAllFlashData();
+  }
+
   render() {
     return (
-      <div className="App">
+      <div className="">
         {this.state.loading ?
           <div className="container flex-center" style={{width: '100%', height: '100%', alignItems: 'center'}}>
             <div style={{width: '100%', textAlign: 'center'}}>
@@ -217,9 +252,162 @@ class App extends Component {
             </div>
           </div>
         :
-          <div>
+          <div className="width-container">
             {this.state.pairedDevice ?
-              "Ans"
+              <div className="container flex-center" style={{width: '100%', height: '100%'}}>
+                <div className="form-container flex-center">
+
+                  <div className="field">
+                    <div className="label">
+                      Bluetooth Advertising Name Length
+                    </div>
+                    <br/>
+                    <input name="bluetoothAdvertisingLength" onChange={this.handleChange} type="numeric" value={this.state.bluetoothAdvertisingLength}/>
+                  </div>
+
+
+                  <div className="field">
+                    <div className="label">
+                      Bluetooth Advertising Name
+                    </div>
+                    <br/>
+                    <input name="bluetoothAdvertisingName"  onChange={this.handleChange} type="text" value={this.state.bluetoothAdvertisingName}/>
+                  </div>
+
+
+                  <div className="field">
+                    <div className="label">
+                      Serial Number String Length
+                    </div>
+                    <br/>
+                    <input  name="serialNumberLength" onChange={this.handleChange} type="numeric" value={this.state.serialNumberLength}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Serial Number
+                    </div>
+                    <br/>
+                    <input name="serialNumber"  onChange={this.handleChange} type="text" value={this.state.serialNumber}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Device Model String Length
+                    </div>
+                    <br/>
+                    <input name="deviceModelLength"  onChange={this.handleChange} type="numeric" value={this.state.deviceModelLength}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Device Model
+                    </div>
+                    <br/>
+                    <input name="deviceModel"  onChange={this.handleChange} type="text" value={this.state.deviceModel}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Hardware Revision ({this.state.hardwareRevisionString})
+                    </div>
+                    <br/>
+                    <input name="hardwareRevision"  onChange={this.handleChange} type="text" value={this.state.hardwareRevision}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Manufacturer ID
+                    </div>
+                    <br/>
+                    <input name="manufacturerID"  onChange={this.handleChange} type="text" value={this.state.manufacturerID}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Organization ID
+                    </div>
+                    <br/>
+                    <input name="organizationID"  onChange={this.handleChange} type="text" value={this.state.organizationID}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Zio Batch ID
+                    </div>
+                    <br/>
+                    <input name="batchID"  onChange={this.handleChange} type="text" value={this.state.batchID}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      First Tested Date
+                    </div>
+                    <br/>
+                    <input name="firstTestedDate"  onChange={this.handleChange} type="text" value={this.state.firstTestedDate}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Last Tested Date
+                    </div>
+                    <br/>
+                    <input name="lastTestedDate"  onChange={this.handleChange} type="text" value={this.state.lastTestedDate}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Battery Install Date
+                    </div>
+                    <br/>
+                    <input name="batteryInstallDate"  onChange={this.handleChange} type="text" value={this.state.batteryInstallDate}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      NFC Advertising On
+                    </div>
+                    <br/>
+                    <input name="NFCOn"  onChange={this.handleChange} type="text" value={this.state.NFCOn}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Cart Detection Bypass
+                    </div>
+                    <br/>
+                    <input name="cartDetection"  onChange={this.handleChange} type="text" value={this.state.cartDetection}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      SNR Off
+                    </div>
+                    <br/>
+                    <input name="SNR"  onChange={this.handleChange} type="text" value={this.state.SNR}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Output Raw data
+                    </div>
+                    <br/>
+                    <input onChange={this.handleChange} type="text" value={this.state.outputRaw}/>
+                  </div>
+
+                  <div className="field">
+                    <div className="label">
+                      Standby Timeout
+                    </div>
+                    <br/>
+                    <input name="standby"  onChange={this.handleChange} type="text" value={this.state.standby}/>
+                  </div>
+
+                </div>
+                <div onClick={this.updateAllFlashData} className="button" style={{fontSize: 27, margin: '30px 0'}}>
+                  Flash EEPROM
+                </div>
+              </div>
               :
               <div className="container flex-center" style={{width: '100%', height: '100%'}}>
                 <div style={{width: '100%', textAlign: 'center'}}>

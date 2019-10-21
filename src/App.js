@@ -43,6 +43,8 @@ class App extends Component {
     try {
       let flashAddress = await this.state.currentService.getCharacteristic('16d30bc8-f148-49bd-b127-8042df63ded0');
       await flashAddress.writeValue(dv.buffer);
+      await new Promise(r => setTimeout(r, 3000));
+      console.log('FLASHED EEPROM');
     } catch(e) {
       console.log("ERROR: ", e);
     }
@@ -72,7 +74,7 @@ class App extends Component {
     let serialNumberLengthChar = await this.getFlashData(9);
     let serialNumberLength = await serialNumberLengthChar.readValue();
     let serialNumberLengthVal = await serialNumberLength.getUint32();
-    serialNumberLengthVal = bluetoothAdvertisingLengthVal > 16 ? 16 : bluetoothAdvertisingLengthVal;
+    serialNumberLengthVal = serialNumberLengthVal > 16 ? 16 : serialNumberLengthVal;
     //---- Serial Number String
     numCharsDecoded = 0;
     let serialNumber = '';
@@ -213,22 +215,24 @@ class App extends Component {
     try {
       let buffer = new ArrayBuffer(4);
       let dv = new DataView(buffer);
-      dv.setUint32(0, address, false);
+      dv.setUint32(0, address, true);
       let flashAddress = await this.state.currentService.getCharacteristic('16d30bcf-f148-49bd-b127-8042df63ded0');
       await flashAddress.writeValue(dv.buffer);
+
       buffer = new ArrayBuffer(4);
       dv = new DataView(buffer);
-      dv.setUint32(0, parseInt(value), false);
+      dv.setUint32(0, parseInt(value), true);
       let flashData = await this.state.currentService.getCharacteristic('16d30bd0-f148-49bd-b127-8042df63ded0');
-      console.log(dv);
-      await flashAddress.writeValue(dv.buffer);
+      await flashData.writeValue(dv.buffer);
+
       buffer = new ArrayBuffer(1);
       dv = new DataView(buffer);
       dv.setUint8(0, 6, false);
       let writeFlash = await this.state.currentService.getCharacteristic('16d30bc8-f148-49bd-b127-8042df63ded0');
       console.log(dv);
-      await flashAddress.writeValue(dv.buffer);
+      await writeFlash.writeValue(dv.buffer);
       console.log("yes");
+
     } catch(e) {
       console.error(e);
     } 
@@ -236,7 +240,8 @@ class App extends Component {
 
   updateAllFlashData = async () =>  {
     await this.flashEEPROM();
-    await this.writeFlashData(0, this.state.bluetoothAdvertisingLength)
+    await this.writeFlashData(0, this.state.bluetoothAdvertisingLength);
+    //TODO STRING GET
     await this.readAllFlashData();
   }
 

@@ -1,0 +1,176 @@
+{
+    "array":[
+        {
+            "name":"bt_adv_len",
+            "address":0,
+            "length":1,
+            "full_name":"Bluetooth Advertising Name Length",
+            "description":"The number of characters in the Advertising name",
+            "input_type":"number",
+            "input_desc":"Number from 0 to 31"
+        },
+        {
+            "name":"bt_adv_name",
+            "address":1,
+            "length":8,
+            "full_name":"Bluetooth Advertising Name",
+            "description":"The name displayed when advertising",
+            "input_type":"text",
+            "input_desc":"Max 31-character UTF-8 string"
+        },
+        {
+            "name":"serial_len",
+            "address":9,
+            "length":1,
+            "full_name":"Serial Number String Length",
+            "description":"The number of characters in the Serial Number String ",
+            "input_type":"number",
+            "input_desc":"Number from 0 to 16"
+        },
+        {
+            "name":"serial",
+            "address":10,
+            "length":4,
+            "full_name":"Serial Number",
+            "description":"Unique device identifier",
+            "input_type":"text",
+            "input_desc":"Max 16-character UTF-8 string"
+        },
+        {
+            "name":"model_len",
+            "address":14,
+            "length":1,
+            "full_name":"Device Model String Length",
+            "description":"The number of characters in the Device Model String",
+            "input_type":"number",
+            "input_desc":"Number from 0 to 16"
+        },
+        {
+            "name":"model",
+            "address":15,
+            "length":4,
+            "full_name":"Device Model",
+            "description":"Identifies the Product the device is in",
+            "input_type":"text",
+            "input_desc":"Max 16-character UTF-8 string"
+        },
+        {
+            "name":"hw_rev",
+            "address":19,
+            "length":1,
+            "full_name":"Hardware Revision",
+            "description":"The HW revision of the PCB",
+            "input_type":"number",
+            "input_desc":"0x00MMmmpp, Major.minor.patch"
+        },
+        {
+            "name":"manufacturer_id",
+            "address":20,
+            "length":1,
+            "full_name":"Manufacturer ID",
+            "description":"TBD",
+            "input_type":"number",
+            "input_desc":"32-bit number"
+        },
+        {
+            "name":"organization_id",
+            "address":21,
+            "length":1,
+            "full_name":"Organization ID",
+            "description":"TBD",
+            "input_type":"number",
+            "input_desc":"32-bit number"
+        },
+        {
+            "name":"batch_id",
+            "address":22,
+            "length":1,
+            "full_name":"Zio Batch ID",
+            "description":"Traceable batch number assigned to the board",
+            "input_type":"number",
+            "input_desc":"32-bit number"
+        },
+        {
+            "name":"first_test_date",
+            "address":23,
+            "length":1,
+            "full_name":"First Tested Date",
+            "description":"The date which the device was first setup",
+            "input_type":"date",
+            "input_desc":"decimal date format YYYYMMDD"
+        },
+        {
+            "name":"last_test_date",
+            "address":24,
+            "length":1,
+            "full_name":"Last Tested Date",
+            "description":"The date which the device was most recently setup",
+            "input_type":"date",
+            "input_desc":"decimal date format YYYYMMDD"
+        },
+        {
+            "name":"batt_install_date",
+            "address":25,
+            "length":1,
+            "full_name":"Battery Install Date",
+            "description":"The date which the battery was installed",
+            "input_type":"date",
+            "input_desc":"decimal date format YYYYMMDD"
+        },
+        {
+            "name":"nfc_on",
+            "address":26,
+            "length":1,
+            "full_name":"NFC Advertising On",
+            "description":"Enables NFC Bluetooth Advertising",
+            "input_type":"number",
+            "input_desc":"1 = NFC Enabled, 0 = NFC Disabled, Else = Default defined in firmware"
+        },
+        {
+            "name":"cart_detect_off",
+            "address":27,
+            "length":1,
+            "full_name":"Cart Detection Bypass",
+            "description":"Removes the Cartridge detection requirement",
+            "input_type":"number",
+            "input_desc":"1 = Bypass Detection, 0 = Normal Operation, Else = Default defined in firmware"
+        },
+        {
+            "name":"snr_off",
+            "address":28,
+            "length":1,
+            "full_name":"SNR Off",
+            "description":"Skips the SNR frequency tests",
+            "input_type":"number",
+            "input_desc":"1 = SNR not performed, 0 = SNR is performed, Else = Default defined in firmware"
+        },
+        {
+            "name":"raw_data",
+            "address":29,
+            "length":1,
+            "full_name":"Output Raw data",
+            "description":"Outputs unfiltered data in the data packet",
+            "input_type":"number",
+            "input_desc":"1 = Output Not Filtered, 0 = Output Filtered, Else = Default defined in firmware"
+        },
+        {
+            "name":"timeout",
+            "address":30,
+            "length":1,
+            "full_name":"Standby Timeout",
+            "description":"The timeout in seconds before the device turns itself off",
+            "input_type":"number",
+            "input_desc":"0 = no time out, Else = time in seconds"
+            
+        },
+        {
+            "name":"start_volt_opt_on",
+            "address":31,
+            "length":1,
+            "full_name":"Start Voltage Optimization Switch",
+            "description":"Enables ‘Start Voltage Optimization’",
+            "input_type":"number",
+            "input_desc":"1 = Start Volt Optimization Enabled, 0 = Start Volt Optimization Disabled, Else = Default defined in firmware"
+        }
+    ]
+}

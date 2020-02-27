@@ -17,6 +17,11 @@ class App extends Component {
     firmware_version: "reading...",
     device_name: null,
   }
+
+  componentDidMount(){
+    console.log('Zio Setup Centre v0.11');
+  }
+
   
   //process to begin pairing
   pairDevice = () => {

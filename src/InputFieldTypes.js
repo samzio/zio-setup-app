@@ -2,13 +2,17 @@ import React, { Component } from "react";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
+//conversion
+let enc = new TextDecoder("utf-8");
+
 class InputFieldTypes extends Component {
 
-    constructor(props){
-        super(props);
+    handleNumberChange = (event) => {
+        event.preventDefault();
+        this.props.on_update_value(event.target.name, event.target.value);
     }
 
-    handleValueChange = (event) => {
+    handleTextChange = (event) => {
         event.preventDefault();
         this.props.on_update_value(event.target.name, event.target.value);
     }
@@ -26,11 +30,11 @@ class InputFieldTypes extends Component {
         //selects the correct input field
         if(e.input_type === "text")
         {
-            inputField = <input type="text" value={val || ""} autoComplete="off" name={e.name} onChange={this.handleValueChange} />
+            inputField = <input type="text" value={val || ""} autoComplete="off" name={e.name} onChange={this.handleNumberChange} />
         }
         else if(e.input_type === "number")
         {
-            inputField = <input type="number" value={val || ""} autoComplete="off" name={e.name} onChange={this.handleValueChange} />
+            inputField = <input type="number" value={val || ""} autoComplete="off" name={e.name} onChange={this.handleTextChange} />
         }
         else if(e.input_type === "date")
         {

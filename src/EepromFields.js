@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import styled from 'styled-components'
 import EepromJSON from './EEPROMspec.json'
 import ProgressBar from './ProgressBar' 
 import InputFieldTypes from './InputFieldTypes'
@@ -7,9 +6,6 @@ import { format } from 'date-fns'
 
 //conversion
 let enc = new TextDecoder("utf-8");
-let buf2Hex = (buffer) => { // buffer is an ArrayBuffer
-  return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
-}
 
 //expected characteristic UUIDs
 const btZioServiceUUID = '16d30bc1-f148-49bd-b127-8042df63ded0'
@@ -19,16 +15,42 @@ const flashDataCharUUID = '16d30bd0-f148-49bd-b127-8042df63ded0'
 const eraseCmd = 5
 const writeCmd = 6
 
+function toUTF8Array(str) {
+    var utf8 = [];
+    if(str!=null){
+        for (var i=0; i < str.length; i++) {
+            var charcode = str.charCodeAt(i);
+            if (charcode < 0x80) utf8.push(charcode);
+            else if (charcode < 0x800) {
+                utf8.push(0xc0 | (charcode >> 6), 
+                        0x80 | (charcode & 0x3f));
+            }
+            else if (charcode < 0xd800 || charcode >= 0xe000) {
+                utf8.push(0xe0 | (charcode >> 12), 
+                        0x80 | ((charcode>>6) & 0x3f), 
+                        0x80 | (charcode & 0x3f));
+            }
+            // surrogate pair
+            else {
+                i++;
+                charcode = (((charcode&0x3ff)<<10)|(str.charCodeAt(i)&0x3ff)) + 0x010000;
+                utf8.push(0xf0 | (charcode >>18), 
+                        0x80 | ((charcode>>12) & 0x3f), 
+                        0x80 | ((charcode>>6) & 0x3f), 
+                        0x80 | (charcode & 0x3f));
+            }
+        }
+    }
+    return utf8;
+}
+
 class EepromFields extends Component {
 
     constructor(props){
         super(props);
         this.state = {
-            reading_eeprom: false,          
-            read_complete: false,       
-            writing_eeprom: false,
-            write_complete: false,
-            eeprom_progress: 0,
+            eeprom_operation_in_progress: false,
+            eeprom_progress_percentage: 0,
             have_import_file: false,
         }
     }
@@ -64,14 +86,187 @@ class EepromFields extends Component {
     
     //process to read the entire contents of the EEPROM
     readEeprom = async () => {
-        this.setState({reading_eeprom: true, read_complete: false, writing_eeprom: false, write_complete: false, eeprom_progress: 0});
-        this.getFlashDataInt(14);
+        
+        //read in progress
+        this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: 0});
+        
+        //read & save entire eeprom to array
+        let eepromValues = [];
+        for(var i = 0; i < EepromJSON.array.length; i++){
+            eepromValues = eepromValues.concat(await this.getFlashDataArray(EepromJSON.array[i].address, EepromJSON.array[i].length));
+            var per = 100 * ((i + 1) / EepromJSON.array.length);
+            this.setState({eeprom_progress_percentage: per});
+        }
+        console.log('values read from eeprom: ', eepromValues);
+
+        //convert array and set it to state
+        var address_i = 0;
+        for(i = 0; i < EepromJSON.array.length; i++){
+
+            //if it is a number
+            if(EepromJSON.array[i].input_type === "number"){
+
+                //make sure it is only one uint32 long
+                if(EepromJSON.array[i].length === 1){
+                    this.setState({
+                        [EepromJSON.array[i].name]: eepromValues[address_i].toString(),
+                    });                   
+                }
+
+                //next address
+                address_i++;
+            }
+
+            //if it is text
+            else if(EepromJSON.array[i].input_type === "text"){
+         
+                let length = EepromJSON.array[i].length;
+                let textAsBytesArray = [];
+                //separate each uint32 to uint8 bytes for the whole length of the string
+                for(var j = 0; j < length; j++){
+                    let arr = new ArrayBuffer(4)
+                    let dv = new DataView(arr);
+                    dv.setUint32(0, eepromValues[address_i + j], false);   
+                    textAsBytesArray.push(dv.getUint8(0));
+                    textAsBytesArray.push(dv.getUint8(1));
+                    textAsBytesArray.push(dv.getUint8(2));
+                    textAsBytesArray.push(dv.getUint8(3));
+                }
+
+                //convert the array to utf-8
+                var utf8string = enc.decode(Uint8Array.from(textAsBytesArray));
+                console.log(utf8string);
+                this.setState({
+                    [EepromJSON.array[i].name]: utf8string,
+                });               
+                
+                //next address
+                address_i += length;
+            }
+            
+            //if it is a date
+            else if(EepromJSON.array[i].input_type === "date"){
+
+                //make sure it is only one uint32 long
+                if(EepromJSON.array[i].length === 1){
+
+                    //extract date yyyyMMdd
+                    var year = Math.round(eepromValues[address_i] / 10000);
+                    var month =  Math.round((eepromValues[address_i] % 10000) / 100);
+                    var day =  Math.round(eepromValues[address_i] % 100);
+                    var date = year + '/' + month + '/' + day;
+                    date = new Date(date);
+                    
+                    //check for valid date
+                    if(!isNaN(date)){
+                        this.setState({
+                            [EepromJSON.array[i].name]: date,
+                        });
+                    }
+                }
+
+                //next address
+                address_i++;
+            }            
+        }
+
+        //done
+        this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100});
     }
 
     //process to write the entire contents of the EEPROM
     writeEeprom = async () => {
-        this.setState({reading_eeprom: false, read_complete: false, writing_eeprom: true, write_complete: false, eeprom_progress: 0});
-        this.writeFlashDataInt(14, 123);
+        
+        //write in progress
+        this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: 0});
+
+        //must erase first!
+        this.eraseFlashData();
+        this.setState({eeeprom_progress_percentage: 20});
+
+        //convert all the values from the state into a uint32 array 
+        let eepromValues = [];
+        var address_i = 0;
+        for(var i = 0; i < EepromJSON.array.length; i++){
+
+            //if it is a number
+            if(EepromJSON.array[i].input_type === "number"){
+
+                //make sure it is only one uint32 long
+                if(EepromJSON.array[i].length === 1){
+                    eepromValues[address_i] = this.state[EepromJSON.array[i].name];
+                }
+
+                //next address
+                address_i++;
+            }
+
+            //if it is text
+            else if(EepromJSON.array[i].input_type === "text"){
+         
+                let length = EepromJSON.array[i].length;
+
+                //convert our string to utf-8
+                var utf8str = toUTF8Array(this.state[EepromJSON.array[i].name]);
+
+                //set the array with the utf bytes
+                for(var j = 0; j < length; j++){
+                    //combine utf-8 bytes into uint32 number
+                    let arr = new ArrayBuffer(4)
+                    let dv = new DataView(arr);                 
+                    for(var b = 0; b < 4; b++){
+                        //set dataview bytes
+                        if(b+(4*j) < utf8str.length){
+                            dv.setUint8(b, utf8str[b+(4*j)])
+                        }
+                        //set the remaining bytes to zero
+                        else{
+                            dv.setUint8(b, 0);
+                        }
+                    }
+                    //set value to the uint32 of the dataview
+                    var value = dv.getUint32(0);
+                    eepromValues[address_i + j] = value;
+                }
+
+                //next address
+                address_i += length;
+            }
+            
+            //if it is a date
+            else if(EepromJSON.array[i].input_type === "date"){
+
+                //make sure it is only one uint32 long
+                if(EepromJSON.array[i].length === 1){
+                    var d = new Date(this.state[EepromJSON.array[i].name]);
+                    eepromValues[address_i] = (d.getFullYear() * 10000) + (d.getMonth() * 100) + d.getDate();
+                }
+
+                //next address
+                address_i++;
+            }             
+            
+
+        }
+
+        console.log('values to write to eeprom: ', eepromValues);
+
+        //write eeprom array   
+        for(var addr = 0; addr < eepromValues.length; addr++){
+            
+            //check for null and undefined 
+            if((eepromValues[addr] === undefined)||isNaN(eepromValues[addr])||(eepromValues[addr] == null)){
+                eepromValues[addr] = 0xffffffff;
+            }
+
+            //write
+            await this.writeFlashDataInt(addr, eepromValues[addr]);
+            var per = 20 + 80 * ((addr + 1) / eepromValues.length);
+            this.setState({eeprom_progress_percentage: per});
+        }
+
+        //done
+        this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100});
     }
 
     //process to get form values from file
@@ -174,15 +369,16 @@ class EepromFields extends Component {
             //read address from flashDataChar
             let dataVal = await this.state.flashDataChar.readValue();
             let result = await dataVal.getUint32(0, true);
-            console.log('read: ', result);
-            return result;
+            console.log('read: ' + result + ' from address ' + address);
+            return await result;
         }
         catch(e){
             console.log('error reading flash: ', e);
+            return 0;
         }
     }
 
-    //Write an Int32 from an EEPROM address
+    //Write an Int32 to an EEPROM address
     writeFlashDataInt = async (address, value) => {
         try{        
             //write address to flashAddressChar
@@ -197,10 +393,23 @@ class EepromFields extends Component {
             
             //write writeCmd to the cmdChar
             await this.state.cmdChar.writeValue(Uint8Array.of(writeCmd));
+
+            console.log('wrote: ' + value + ' to address ' + address);
         }
         catch(e){
             console.log('error writing flash: ', e);
         }        
+    }
+
+    //Read an array of Int32 from an EEPROM address
+    getFlashDataArray = async (address, length) => {
+        var flashData = [];
+        for(var i = 0; i < length; i++)
+        {
+            var result = await this.getFlashDataInt(address + i);
+            flashData.push(result);
+        }
+        return await flashData;
     }
     
     render() {        
@@ -223,8 +432,8 @@ class EepromFields extends Component {
                 </div>
 
                 {/* Show/Hide Eeprom Progress Bar */}
-                {this.state.reading_eeprom && ( 
-                <ProgressBar percentage={this.state.eeprom_progress}/>
+                {this.state.eeprom_operation_in_progress && ( 
+                <ProgressBar percentage={this.state.eeprom_progress_percentage}/>
                 )}   
                 
                 {/* All Eeprom Fields */}

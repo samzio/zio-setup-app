@@ -14,7 +14,7 @@ const Thumb = styled.div`
     height: 100%;
     background: #6bccf9;
     border-radius: 8px;
-    transition: width 0.2s ease-in-out
+    transition: width 0.3s ease-in-out
 `;
 
 class ProgressBar extends Component {

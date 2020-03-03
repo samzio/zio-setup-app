@@ -25,9 +25,11 @@ class ProgressBar extends Component {
 
     render() {
         return (
-            <Track>
-            <Thumb percentage={this.clamp(0, this.props.percentage, 100)}/>
-            </Track>
+            <div>{this.props.message}
+                <Track>
+                <Thumb percentage={this.clamp(0, this.props.percentage, 100)}/>
+                </Track>
+            </div>
         )
     }
 }

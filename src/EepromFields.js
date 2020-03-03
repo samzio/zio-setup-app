@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import EepromJSON from './EEPROMspec.json'
 import ProgressBar from './ProgressBar' 
 import InputFieldTypes from './InputFieldTypes'
-import { format } from 'date-fns'
+import { isValid, format } from 'date-fns'
 
 //conversion
 let enc = new TextDecoder("utf-8");
@@ -44,6 +44,10 @@ function toUTF8Array(str) {
     return utf8;
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 class EepromFields extends Component {
 
     constructor(props){
@@ -52,6 +56,7 @@ class EepromFields extends Component {
             eeprom_operation_in_progress: false,
             eeprom_progress_percentage: 0,
             have_import_file: false,
+            erase_function_enabled: false,
         }
     }
 
@@ -88,7 +93,7 @@ class EepromFields extends Component {
     readEeprom = async () => {
         
         //read in progress
-        this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: 0});
+        this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: 0, progress_bar_message: 'reading'});
         
         //read & save entire eeprom to array
         let eepromValues = [];
@@ -103,8 +108,21 @@ class EepromFields extends Component {
         var address_i = 0;
         for(i = 0; i < EepromJSON.array.length; i++){
 
-            //if it is a number
-            if(EepromJSON.array[i].input_type === "number"){
+            //if its our hardware revision special case
+            if(EepromJSON.array[i].name === "hw_rev"){
+
+                //TODO convert eepromValues[address_i] to hw rev string
+
+                this.setState({
+                    [EepromJSON.array[i].name]: "8.5.0",
+                });   
+
+                //next address
+                address_i++;
+            }
+
+            //if it is a number or count
+            else if((EepromJSON.array[i].input_type === "number")||(EepromJSON.array[i].input_type === "count")){
 
                 //make sure it is only one uint32 long
                 if(EepromJSON.array[i].length === 1){
@@ -135,7 +153,6 @@ class EepromFields extends Component {
 
                 //convert the array to utf-8
                 var utf8string = enc.decode(Uint8Array.from(textAsBytesArray));
-                console.log(utf8string);
                 this.setState({
                     [EepromJSON.array[i].name]: utf8string,
                 });               
@@ -171,26 +188,43 @@ class EepromFields extends Component {
         }
 
         //done
-        this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100});
+        this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100, progress_bar_message: ''});
+
+        //once done enable erase
+        this.setState({erase_function_enabled: true});
     }
 
     //process to write the entire contents of the EEPROM
     writeEeprom = async () => {
-        
-        //write in progress
-        this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: 0});
+
+        //TODO check regex
 
         //must erase first!
-        this.eraseFlashData();
-        this.setState({eeeprom_progress_percentage: 20});
+        await this.eraseFlashData();
+        console.log('erase complete')
+        this.setState({eeeprom_progress_percentage: 0});
+
+        //write in progress
+        this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: 0, progress_bar_message: 'writing'});
 
         //convert all the values from the state into a uint32 array 
         let eepromValues = [];
         var address_i = 0;
         for(var i = 0; i < EepromJSON.array.length; i++){
 
-            //if it is a number
-            if(EepromJSON.array[i].input_type === "number"){
+            //if its our hardware revision special case
+            if(EepromJSON.array[i].name === "hw_rev"){
+
+                //TODO convert this.state[EepromJSON.array[i].name] to uint32
+
+                eepromValues[address_i] = 0x00080500
+
+                //next address
+                address_i++;
+            }
+            
+            //if it is a number or count
+            else if((EepromJSON.array[i].input_type === "number")||(EepromJSON.array[i].input_type === "count")){
 
                 //make sure it is only one uint32 long
                 if(EepromJSON.array[i].length === 1){
@@ -239,14 +273,12 @@ class EepromFields extends Component {
                 //make sure it is only one uint32 long
                 if(EepromJSON.array[i].length === 1){
                     var d = new Date(this.state[EepromJSON.array[i].name]);
-                    eepromValues[address_i] = (d.getFullYear() * 10000) + (d.getMonth() * 100) + d.getDate();
+                    eepromValues[address_i] = (d.getFullYear() * 10000) + ((d.getMonth() + 1) * 100) + d.getDate();
                 }
 
                 //next address
                 address_i++;
-            }             
-            
-
+            }                      
         }
 
         console.log('values to write to eeprom: ', eepromValues);
@@ -266,7 +298,54 @@ class EepromFields extends Component {
         }
 
         //done
-        this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100});
+        this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100, progress_bar_message: ''});
+    }
+
+    //erase all data in the EEPROM
+    eraseFlashData = async () => {
+        try{
+            this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: 0, progress_bar_message: 'erasing'});        
+            await this.state.cmdChar.writeValue(Uint8Array.of(eraseCmd))
+            await this.waitForCmdComplete(5);
+            this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100, progress_bar_message: ''});  
+        }
+        catch(e){
+            console.log('error erasing flash: ', e);
+        }
+    }
+
+    //function that waits for the command status to be zero
+    waitForCmdComplete = async (maxSeconds) => {
+        
+        //loop to check for completion
+        var secondsRemaining = maxSeconds;
+        do{
+            //get a result
+            let result = await this.getCmdStatus();
+            if(result === 0){
+                this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100});  
+                return true;
+            }
+
+            //sleep 1 second
+            await sleep(1000);
+            secondsRemaining--;
+            var percentage = 100 * ((maxSeconds - secondsRemaining) / maxSeconds);
+            this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: percentage});  
+        }
+        //if we havent timed out
+        while(secondsRemaining > 0);
+
+        console.log('command timed out')
+        return false
+    }
+
+    //get the cmdChar value to determine the CMD result status
+    getCmdStatus = async () => {
+        let val = await this.state.cmdChar.readValue();
+        let result = await val.getUint8(0);
+        this.setState({cmdStatus: result})
+        return await result;
     }
 
     //process to get form values from file
@@ -305,7 +384,11 @@ class EepromFields extends Component {
             //if the value is a date
             if(EepromJSON.array[i].input_type === "date")
             {
-                var date_fmt = format(this.state[EepromJSON.array[i].name], 'yyyy/MM/dd');
+                var date_fmt = NaN;
+                //check if date field is valid
+                if(isValid(this.state[EepromJSON.array[i].name])){
+                    date_fmt = format(this.state[EepromJSON.array[i].name], 'yyyy/MM/dd');
+                }                
                 outputObj.push({[EepromJSON.array[i].name]: date_fmt})
             }
             else
@@ -348,16 +431,6 @@ class EepromFields extends Component {
         }
     }
 
-    //erase all data in the EEPROM
-    eraseFlashData = async () => {
-        try{        
-            await this.state.cmdChar.writeValue(Uint8Array.of(eraseCmd));
-        }
-        catch(e){
-            console.log('error erasing flash: ', e);
-        }
-    }
-
     //Read an Int32 from an EEPROM address
     getFlashDataInt = async (address) => {
         try{        
@@ -369,7 +442,7 @@ class EepromFields extends Component {
             //read address from flashDataChar
             let dataVal = await this.state.flashDataChar.readValue();
             let result = await dataVal.getUint32(0, true);
-            console.log('read: ' + result + ' from address ' + address);
+            // console.log('read: ' + result + ' from address ' + address);
             return await result;
         }
         catch(e){
@@ -394,7 +467,7 @@ class EepromFields extends Component {
             //write writeCmd to the cmdChar
             await this.state.cmdChar.writeValue(Uint8Array.of(writeCmd));
 
-            console.log('wrote: ' + value + ' to address ' + address);
+            // console.log('wrote: ' + value + ' to address ' + address);
         }
         catch(e){
             console.log('error writing flash: ', e);
@@ -412,14 +485,15 @@ class EepromFields extends Component {
         return await flashData;
     }
     
-    render() {        
+    render() {
+        //return
         return (
             <div>
                 {/* Read/Write Buttons */}
                 <div>
                     <button onClick={this.readEeprom}>Read All Data</button>
                     <button onClick={this.writeEeprom}>Write All Data</button>
-                    <button onClick={this.eraseFlashData}>Erase All Data</button>
+                    <button onClick={this.eraseFlashData} disabled={!this.state.erase_function_enabled}>Erase All Data</button>
                 </div>
                 
                 {/* Import/Export values from file */}
@@ -433,15 +507,13 @@ class EepromFields extends Component {
 
                 {/* Show/Hide Eeprom Progress Bar */}
                 {this.state.eeprom_operation_in_progress && ( 
-                <ProgressBar percentage={this.state.eeprom_progress_percentage}/>
+                <ProgressBar message={this.state.progress_bar_message} percentage={this.state.eeprom_progress_percentage}/>
                 )}   
                 
                 {/* All Eeprom Fields */}
                 {EepromJSON.array.map(e => 
-                <li key={e.name}>
-                    <span title={e.description}>{e.full_name}</span> : 
-                    <InputFieldTypes eeprom_field={e} current_value={this.state[e.name]} on_update_value={this.updateStateFromChild} />          
-                </li>)}
+                    <InputFieldTypes key={e.name} eeprom_field={e} current_value={this.state[e.name]} on_update_value={this.updateStateFromChild} update_byte_count={this.updateStringByteCount} />          
+                )}
             </div>
         )
     }

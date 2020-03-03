@@ -1,12 +1,12 @@
 {
     "array":[
         {
-            "name":"bt_adv_len",
+            "name":"bt_adv_name_count",
             "address":0,
             "length":1,
             "full_name":"Bluetooth Advertising Name Length",
-            "description":"The number of characters in the Advertising name",
-            "input_type":"number",
+            "description":"The count of characters in the Advertising name",
+            "input_type":"count",
             "input_desc":"Number from 0 to 31"
         },
         {
@@ -16,15 +16,17 @@
             "full_name":"Bluetooth Advertising Name",
             "description":"The name displayed when advertising",
             "input_type":"text",
-            "input_desc":"Max 31-character UTF-8 string"
+            "input_desc":"Max 31-character UTF-8 string",
+            "max_bytes":31,
+            "regex":".*"
         },
         {
-            "name":"serial_len",
+            "name":"serial_count",
             "address":9,
             "length":1,
             "full_name":"Serial Number String Length",
-            "description":"The number of characters in the Serial Number String ",
-            "input_type":"number",
+            "description":"The count of characters in the Serial Number String ",
+            "input_type":"count",
             "input_desc":"Number from 0 to 16"
         },
         {
@@ -34,15 +36,17 @@
             "full_name":"Serial Number",
             "description":"Unique device identifier",
             "input_type":"text",
-            "input_desc":"Max 16-character UTF-8 string"
+            "input_desc":"Max 16-character UTF-8 string",
+            "max_bytes":16,
+            "regex":".*"
         },
         {
-            "name":"model_len",
+            "name":"model_count",
             "address":14,
             "length":1,
             "full_name":"Device Model String Length",
-            "description":"The number of characters in the Device Model String",
-            "input_type":"number",
+            "description":"The count of characters in the Device Model String",
+            "input_type":"count",
             "input_desc":"Number from 0 to 16"
         },
         {
@@ -52,7 +56,9 @@
             "full_name":"Device Model",
             "description":"Identifies the Product the device is in",
             "input_type":"text",
-            "input_desc":"Max 16-character UTF-8 string"
+            "input_desc":"Max 16-character UTF-8 string",
+            "max_bytes":16,
+            "regex":".*"
         },
         {
             "name":"hw_rev",
@@ -60,8 +66,10 @@
             "length":1,
             "full_name":"Hardware Revision",
             "description":"The HW revision of the PCB",
-            "input_type":"number",
-            "input_desc":"0x00MMmmpp, Major.minor.patch"
+            "input_type":"text",
+            "input_desc":"Major#.minor#.patch#, e.g. 8.6.0",
+            "max_bytes":11,
+            "regex":"^((?:[0-9][0-9]?[0-9]?|0|255)\\.)((?:[0-9][0-9]?[0-9]?|0|255)\\.)((?:[0-9][0-9]?[0-9]?|0|255))$"
         },
         {
             "name":"manufacturer_id",
@@ -124,7 +132,8 @@
             "full_name":"NFC Advertising On",
             "description":"Enables NFC Bluetooth Advertising",
             "input_type":"number",
-            "input_desc":"1 = NFC Enabled, 0 = NFC Disabled, Else = Default defined in firmware"
+            "input_desc":"1 = NFC Enabled, 0 = NFC Disabled, Else = Default defined in firmware",
+            "locked":"true"
         },
         {
             "name":"cart_detect_off",

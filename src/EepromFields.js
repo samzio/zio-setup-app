@@ -111,24 +111,39 @@ class EepromFields extends Component {
             //if its our hardware revision special case
             if(EepromJSON.array[i].name === "hw_rev"){
 
-                //TODO convert eepromValues[address_i] to hw rev string
-
+                //convert eepromValues[address_i] to hw rev string
+                let arr = new ArrayBuffer(4)
+                let dv = new DataView(arr);
+                dv.setUint32(0, eepromValues[address_i], false);
+                var hw_rev_str = dv.getUint8(1).toString() + '.' + dv.getUint8(2).toString() + '.'+ dv.getUint8(3).toString()
                 this.setState({
-                    [EepromJSON.array[i].name]: "8.5.0",
+                    [EepromJSON.array[i].name]: hw_rev_str,
                 });   
 
                 //next address
                 address_i++;
             }
 
-            //if it is a number or count
+            //if it is a number
             else if((EepromJSON.array[i].input_type === "number")||(EepromJSON.array[i].input_type === "count")){
 
                 //make sure it is only one uint32 long
                 if(EepromJSON.array[i].length === 1){
-                    this.setState({
-                        [EepromJSON.array[i].name]: eepromValues[address_i].toString(),
-                    });                   
+                    //if it is a blank eeprom value (0xffffffff)
+                    if(eepromValues[address_i] === 0xffffffff){
+                        //save it as blank
+                        this.setState({
+                            [EepromJSON.array[i].name]: '',
+                        });  
+                    }
+                    else{
+                        //save value
+                        this.setState({
+                            [EepromJSON.array[i].name]: eepromValues[address_i].toString(),
+                        });      
+                    }
+
+                                 
                 }
 
                 //next address
@@ -180,6 +195,12 @@ class EepromFields extends Component {
                             [EepromJSON.array[i].name]: date,
                         });
                     }
+                    //set blank
+                    else{
+                        this.setState({
+                            [EepromJSON.array[i].name]: '',
+                        });
+                    }
                 }
 
                 //next address
@@ -197,12 +218,22 @@ class EepromFields extends Component {
     //process to write the entire contents of the EEPROM
     writeEeprom = async () => {
 
-        //TODO check regex
+        //check regex for each string input
+        for(var k = 0; k < EepromJSON.array.length; k++){
+            if(EepromJSON.array[k].input_type === "text"){
+                console.log(this.state[EepromJSON.array[k].name])
+                var str = this.state[EepromJSON.array[k].name] ? this.state[EepromJSON.array[k].name] : ''
+                //regex check
+                if(str && !str.match(EepromJSON.array[k].regex)){
+                    alert(EepromJSON.array[k].full_name + ' field is in the incorrect format');
+                    return
+                }
+            }
+        }
 
         //must erase first!
         await this.eraseFlashData();
         console.log('erase complete')
-        this.setState({eeeprom_progress_percentage: 0});
 
         //write in progress
         this.setState({eeprom_operation_in_progress: true, eeprom_progress_percentage: 0, progress_bar_message: 'writing'});
@@ -215,9 +246,24 @@ class EepromFields extends Component {
             //if its our hardware revision special case
             if(EepromJSON.array[i].name === "hw_rev"){
 
-                //TODO convert this.state[EepromJSON.array[i].name] to uint32
-
-                eepromValues[address_i] = 0x00080500
+                //convert this.state[EepromJSON.array[i].name] to uint32
+                if(this.state[EepromJSON.array[i].name])
+                {
+                    var digit_chars = this.state[EepromJSON.array[i].name].split('.')
+                    let arr = new ArrayBuffer(4)
+                    let dv = new DataView(arr)
+                    console.log(digit_chars)
+                    dv.setUint8(0, 0);
+                    dv.setUint8(1, parseInt(digit_chars[0]));
+                    dv.setUint8(2, parseInt(digit_chars[1]));
+                    dv.setUint8(3, parseInt(digit_chars[2]));
+                    eepromValues[address_i] = dv.getUint32(0)
+                    console.log(eepromValues[address_i])
+                }
+                //else it is a blank string
+                else{
+                    eepromValues[address_i] = 0
+                }
 
                 //next address
                 address_i++;
@@ -491,17 +537,17 @@ class EepromFields extends Component {
             <div>
                 {/* Read/Write Buttons */}
                 <div>
-                    <button onClick={this.readEeprom}>Read All Data</button>
-                    <button onClick={this.writeEeprom}>Write All Data</button>
-                    <button onClick={this.eraseFlashData} disabled={!this.state.erase_function_enabled}>Erase All Data</button>
+                    <button onClick={this.readEeprom} disabled={this.state.eeprom_operation_in_progress}>Read All Data</button>
+                    <button onClick={this.writeEeprom} disabled={this.state.eeprom_operation_in_progress}>Write All Data</button>
+                    <button onClick={this.eraseFlashData} disabled={!this.state.erase_function_enabled || this.state.eeprom_operation_in_progress}>Erase All Data</button>
                 </div>
                 
                 {/* Import/Export values from file */}
                 <div>
-                    <input type="file" accept=".json" autoComplete="off" onChange={this.handleFileInputChange} />
+                    <input type="file" accept=".json" autoComplete="off" onChange={this.handleFileInputChange} disabled={this.state.eeprom_operation_in_progress}/>
                     <div>
-                        <button onClick={this.getValuesFromFile}>Import Values from File</button>
-                        <button onClick={this.saveValuesToFile}>Export Values to File</button>
+                        <button onClick={this.getValuesFromFile} disabled={this.state.eeprom_operation_in_progress}>Import Values from File</button>
+                        <button onClick={this.saveValuesToFile} disabled={this.state.eeprom_operation_in_progress}>Export Values to File</button>
                     </div>
                 </div>
 
@@ -512,7 +558,7 @@ class EepromFields extends Component {
                 
                 {/* All Eeprom Fields */}
                 {EepromJSON.array.map(e => 
-                    <InputFieldTypes key={e.name} eeprom_field={e} current_value={this.state[e.name]} on_update_value={this.updateStateFromChild} update_byte_count={this.updateStringByteCount} />          
+                    <InputFieldTypes key={e.name} eeprom_field={e} current_value={this.state[e.name]} on_update_value={this.updateStateFromChild} />          
                 )}
             </div>
         )

@@ -42,12 +42,12 @@ class InputFieldTypes extends Component {
         this.props.on_update_value(event.target.name, event.target.value);
     }
 
-    handleTextChange = (max_bytes, regex, event) => {
+    handleTextChange = (max_bytes, event) => {
         event.preventDefault();
 
         //ensure string does not exceed max bytes
         var str = this.clampStringLength(event.target.value, max_bytes)
-        this.props.on_update_value(event.target.name, str);      
+        this.props.on_update_value(event.target.name, str);
         
         //also update the count field
         var count_name = event.target.name + '_count'
@@ -115,7 +115,7 @@ class InputFieldTypes extends Component {
                 value={val} 
                 autoComplete="off" 
                 name={e.name} 
-                onChange={(event) => this.handleTextChange(e.max_bytes, e.regex, event)} 
+                onChange={(event) => this.handleTextChange(e.max_bytes, event)} 
                 disabled={is_locked}
             />
 
@@ -128,7 +128,7 @@ class InputFieldTypes extends Component {
         }
         else if(e.input_type === "count")
         {
-            inputField = <input type="number" value={val || ""} autoComplete="off" name={e.name} onChange={this.handleNumberChange} disabled/>
+            inputField = <input type="number" value={val || 0} autoComplete="off" name={e.name} onChange={this.handleNumberChange} disabled/>
         }
         else if(e.input_type === "date")
         {

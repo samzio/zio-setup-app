@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import device_connecting_svg from './device_connecting.svg';
 import EepromFields from './EepromFields.js'
+import './App_AJ.css';
 
 //conversion
 let enc = new TextDecoder("utf-8");
@@ -19,7 +20,7 @@ class App extends Component {
   }
 
   componentDidMount(){
-    console.log('Zio Setup Centre v0.12');
+    console.log('Zio Setup Centre v0.13');
   }
 
   
@@ -102,7 +103,7 @@ class App extends Component {
 
         <header className="App-header">
           <h1>Welcome to the Zio Setup Centre</h1>
-          <div>{this.state.statusMessage}</div>
+          <div>{this.state.statusMessage}</div><br/>
         </header>
 
         <div className="connect-options">
@@ -128,7 +129,10 @@ class App extends Component {
         <div className="firmware-updater">
           {/* Show/Hide Fields */}
           {this.state.device_connected && ( 
-          <h2>Firmware Version: {this.state.firmware_version}</h2>
+          <div>
+            <h2>Firmware Version: {this.state.firmware_version}</h2>
+            <p>For an online tool to update the firmware version please <a href="https://thegecko.github.io/web-bluetooth-dfu/examples/web.html">click here</a></p>
+          </div>
           )}
         </div>
 

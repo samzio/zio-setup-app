@@ -7,6 +7,8 @@ const Track = styled.div`
     background: #2c4251;
     border-radius: 10px;
     box-shadow: inset 0 0 5px #000;
+    align-items: center;
+    display: inline-block;
 `;
 
 const Thumb = styled.div`
@@ -14,7 +16,7 @@ const Thumb = styled.div`
     height: 100%;
     background: #6bccf9;
     border-radius: 8px;
-    transition: width 0.3s ease-in-out
+    transition: width 0.3s ease-in-out;
 `;
 
 class ProgressBar extends Component {
@@ -25,7 +27,7 @@ class ProgressBar extends Component {
 
     render() {
         return (
-            <div>{this.props.message}
+            <div>{this.props.message}<br/>
                 <Track>
                 <Thumb percentage={this.clamp(0, this.props.percentage, 100)}/>
                 </Track>

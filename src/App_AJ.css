@@ -1,3 +1,7 @@
+.App {
+  text-align: center;
+}
+
 .width-wrapper {
   width: 100vw;
   min-height: 100vh;

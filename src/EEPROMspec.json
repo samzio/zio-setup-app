@@ -132,7 +132,7 @@
             "full_name":"NFC Advertising On",
             "description":"Enables NFC Bluetooth Advertising",
             "input_type":"number",
-            "input_desc":"1 = NFC Enabled, 0 = NFC Disabled, Else = Default defined in firmware",
+            "input_desc":"1 = NFC Enabled, 0 = NFC Disabled, Else = defined in firmware",
             "locked":"true"
         },
         {
@@ -142,7 +142,7 @@
             "full_name":"Cart Detection Bypass",
             "description":"Removes the Cartridge detection requirement",
             "input_type":"number",
-            "input_desc":"1 = Bypass Detection, 0 = Normal Operation, Else = Default defined in firmware"
+            "input_desc":"1 = Bypass Detection, 0 = Normal Operation, Else = defined in firmware"
         },
         {
             "name":"snr_off",
@@ -151,7 +151,7 @@
             "full_name":"SNR Off",
             "description":"Skips the SNR frequency tests",
             "input_type":"number",
-            "input_desc":"1 = SNR not performed, 0 = SNR is performed, Else = Default defined in firmware"
+            "input_desc":"1 = SNR not performed, 0 = SNR is performed, Else = defined in firmware"
         },
         {
             "name":"raw_data",
@@ -160,7 +160,7 @@
             "full_name":"Output Raw data",
             "description":"Outputs unfiltered data in the data packet",
             "input_type":"number",
-            "input_desc":"1 = Output Not Filtered, 0 = Output Filtered, Else = Default defined in firmware"
+            "input_desc":"1 = Output Not Filtered, 0 = Output Filtered, Else = defined in firmware"
         },
         {
             "name":"timeout",
@@ -179,7 +179,16 @@
             "full_name":"Start Voltage Optimization Switch",
             "description":"Enables ‘Start Voltage Optimization’",
             "input_type":"number",
-            "input_desc":"1 = Start Volt Optimization Enabled, 0 = Start Volt Optimization Disabled, Else = Default defined in firmware"
+            "input_desc":"1 = Start Volt Optimization Enabled, 0 = Start Volt Optimization Disabled, Else = defined in firmware"
+        },
+        {
+            "name":"swv_average_on",
+            "address":32,
+            "length":1,
+            "full_name":"SWV Averaging Switch",
+            "description":"Enables ‘SWV Averaging’",
+            "input_type":"number",
+            "input_desc":"1 = SWV Averaging Enabled, 0 = SWV Averaging Disabled, Else = defined in firmware"
         }
     ]
 }

@@ -20,7 +20,7 @@ class App extends Component {
   }
 
   componentDidMount(){
-    console.log('Zio Setup Centre v0.16.1');
+    console.log('Zio Setup Centre v0.16.2');
   }
 
   
@@ -148,6 +148,10 @@ class App extends Component {
           <EepromFields device={this.state.pairedDevice} update_status_msg={this.updateStatusMsg} />
           )}
         </div>
+
+        <br/>
+        <br/>
+        <p>If you have any problems, <a href="https://docs.google.com/forms/d/e/1FAIpQLSdo2MIEHSg9ZsYYtN0h7M2preLRf5cg_PhW9mownfdtNeCjAw/viewform?usp=sf_link" target="_blank"> click here</a> to report to Zio Health.</p>
         
       </div>
     );

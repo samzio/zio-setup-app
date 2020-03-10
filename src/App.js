@@ -20,7 +20,7 @@ class App extends Component {
   }
 
   componentDidMount(){
-    console.log('Zio Setup Centre v0.16');
+    console.log('Zio Setup Centre v0.16.1');
   }
 
   
@@ -97,6 +97,11 @@ class App extends Component {
     })
   }
 
+  //set status message from child component
+  updateStatusMsg = (msg) => {
+    this.setState({statusMessage: msg})
+  }
+
   render() {
     return (
       <div className="App">
@@ -140,7 +145,7 @@ class App extends Component {
         <div className="eeprom-fields">
           {/* Show/Hide Fields */}
           {this.state.device_connected && ( 
-          <EepromFields device={this.state.pairedDevice}/>
+          <EepromFields device={this.state.pairedDevice} update_status_msg={this.updateStatusMsg} />
           )}
         </div>
         

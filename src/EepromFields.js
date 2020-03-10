@@ -343,6 +343,11 @@ class EepromFields extends Component {
             this.setState({eeprom_progress_percentage: per});
         }
 
+        //update status message
+        if(this.state.bt_adv_name !== ''){
+            this.props.update_status_msg('Connected to ' + this.state.bt_adv_name)
+        }
+
         //done
         this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100, progress_bar_message: ''});
     }

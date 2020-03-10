@@ -166,7 +166,7 @@
             "name":"timeout",
             "address":30,
             "length":1,
-            "full_name":"Standby Timeout",
+            "full_name":"Standby Timeout (s)",
             "description":"The timeout in seconds before the device turns itself off",
             "input_type":"number",
             "input_desc":"0 = no time out, Else = time in seconds"
@@ -189,6 +189,15 @@
             "description":"Enables ‘SWV Averaging’",
             "input_type":"number",
             "input_desc":"1 = SWV Averaging Enabled, 0 = SWV Averaging Disabled, Else = defined in firmware"
+        },
+        {
+            "name":"balance_time_ms",
+            "address":33,
+            "length":1,
+            "full_name":"Electrode Balance Time (ms)",
+            "description":"The time in milliseconds that the device 'balances' itself in between every SWV. The device 'balances' by setting the Electrode to 1.5V and waiting the given time",
+            "input_type":"number",
+            "input_desc":"0 = no balancing occurs, 10000+ = no balancing occurs, Else = time in milliseconds"
         }
     ]
 }

@@ -20,7 +20,7 @@ class App extends Component {
   }
 
   componentDidMount(){
-    console.log('Zio Setup Centre v0.15');
+    console.log('Zio Setup Centre v0.16');
   }
 
   

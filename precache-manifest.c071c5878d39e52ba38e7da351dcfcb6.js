@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "303c4891b6b2d1250191b3d3cc313aa8",
+    "revision": "6563a909932a8f98cf1e7fd01e4dcbf8",
     "url": "/zio-setup-app/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/zio-setup-app/static/css/2.b90ce945.chunk.css"
   },
   {
-    "revision": "b3f46ce26201ba5c0e2c",
+    "revision": "afbeb12c9e9615eda8f0",
     "url": "/zio-setup-app/static/css/main.a82161c6.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/zio-setup-app/static/js/2.cbf3c6e8.chunk.js"
   },
   {
-    "revision": "b3f46ce26201ba5c0e2c",
-    "url": "/zio-setup-app/static/js/main.eb9034b2.chunk.js"
+    "revision": "afbeb12c9e9615eda8f0",
+    "url": "/zio-setup-app/static/js/main.289a005f.chunk.js"
   },
   {
     "revision": "28485117e4a3ac147d60",

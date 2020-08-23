@@ -1,4 +1,11 @@
-1. Do a regular commit to the bitbucket
-2. git remote set-url origin https://github.com/samzio/zio-setup-app.git
-3. yarn run deploy
-4. git remote set-url origin https://sambucca@bitbucket.org/sambucca/zio_setup_sam.git
+1. Do a regular commit to bitbucket
+git remote set-url origin https://sambucca@bitbucket.org/sambucca/zio_setup_sam.git
+
+2. set url to github origin
+git remote set-url origin https://github.com/samzio/zio-setup-app.git
+
+3. deploy!
+yarn run deploy
+
+4. reset origin
+git remote set-url origin https://sambucca@bitbucket.org/sambucca/zio_setup_sam.git

@@ -25,7 +25,7 @@
             "address":9,
             "length":1,
             "full_name":"Serial Number String Length",
-            "description":"The count of characters in the Serial Number String ",
+            "description":"The count of characters in the Serial Number String",
             "input_type":"count",
             "input_desc":"Number from 0 to 16"
         },
@@ -112,7 +112,7 @@
             "address":24,
             "length":1,
             "full_name":"Last Tested Date",
-            "description":"The date which the device was most recently setup",
+            "description":"The date which the device was most recently tested",
             "input_type":"date",
             "input_desc":"decimal date format YYYYMMDD"
         },
@@ -203,7 +203,7 @@
             "name":"sweep_reversal_on",
             "address":34,
             "length":1,
-            "full_name":"SWV Sweep Reveral Switch",
+            "full_name":"SWV Sweep Reversal Switch",
             "description":"Enables High-to-Low SWV Sweeping",
             "input_type":"number",
             "input_desc":"1 = High-to-Low SWV Sweep, 0 = Low-to-High SWV Sweep, Else = defined in firmware"

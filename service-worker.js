@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/zio-setup-app/precache-manifest.6f5bc58b5c1a87bbf99068c28bf33d12.js"
+  "/zio-setup-app/precache-manifest.2b5f464a21abfd94f7a8b7d8139b71d6.js"
 );
 
 self.addEventListener('message', (event) => {

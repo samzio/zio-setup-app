@@ -1,27 +1,31 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "3c9ac419242ec57d6fea663fcc1f45b5",
+    "revision": "64ed507b80c706d0e3571908a2594640",
     "url": "/zio-setup-app/index.html"
   },
   {
-    "revision": "54e8e06eec686bcb766d",
+    "revision": "e2f3f71cf3bf16a49808",
     "url": "/zio-setup-app/static/css/2.b90ce945.chunk.css"
   },
   {
-    "revision": "597e10e5ad39cae93c7c",
+    "revision": "461d18ec2a225dd2621f",
     "url": "/zio-setup-app/static/css/main.a82161c6.chunk.css"
   },
   {
-    "revision": "54e8e06eec686bcb766d",
-    "url": "/zio-setup-app/static/js/2.cbf3c6e8.chunk.js"
+    "revision": "e2f3f71cf3bf16a49808",
+    "url": "/zio-setup-app/static/js/2.167c3661.chunk.js"
   },
   {
-    "revision": "597e10e5ad39cae93c7c",
-    "url": "/zio-setup-app/static/js/main.e584957f.chunk.js"
+    "revision": "461d18ec2a225dd2621f",
+    "url": "/zio-setup-app/static/js/main.3e702bc5.chunk.js"
   },
   {
     "revision": "28485117e4a3ac147d60",
     "url": "/zio-setup-app/static/js/runtime-main.9a1f30f7.js"
+  },
+  {
+    "revision": "44073a78f24a10007a2557be78538858",
+    "url": "/zio-setup-app/static/media/ZioV8_1.2.7.44073a78.zip"
   },
   {
     "revision": "c594fc6afdf8d2bccf576b6bfd8436a2",

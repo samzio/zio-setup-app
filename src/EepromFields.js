@@ -57,6 +57,7 @@ class EepromFields extends Component {
             eeprom_progress_percentage: 0,
             have_import_file: false,
             erase_function_enabled: false,
+            write_function_enabled: false,
         }
     }
 
@@ -212,7 +213,7 @@ class EepromFields extends Component {
         this.setState({eeprom_operation_in_progress: false, eeprom_progress_percentage: 100, progress_bar_message: ''});
 
         //once done enable erase
-        this.setState({erase_function_enabled: true});
+        this.setState({erase_function_enabled: true, write_function_enabled: true});
     }
 
     //process to write the entire contents of the EEPROM
@@ -543,7 +544,7 @@ class EepromFields extends Component {
                 {/* Read/Write Buttons */}
                 <div>
                     <button onClick={this.readEeprom} disabled={this.state.eeprom_operation_in_progress}>Read All Data</button>
-                    <button onClick={this.writeEeprom} disabled={this.state.eeprom_operation_in_progress}>Write All Data</button>
+                    <button onClick={this.writeEeprom} disabled={!this.state.write_function_enabled || this.state.eeprom_operation_in_progress}>Write All Data</button>
                     <button onClick={this.eraseFlashData} disabled={!this.state.erase_function_enabled || this.state.eeprom_operation_in_progress}>Erase All Data</button>
                 </div>
                 

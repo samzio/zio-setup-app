@@ -381,7 +381,7 @@ class App extends Component {
         <br/>
         <p>If you have any problems, <a href="https://docs.google.com/forms/d/e/1FAIpQLSdo2MIEHSg9ZsYYtN0h7M2preLRf5cg_PhW9mownfdtNeCjAw/viewform?usp=sf_link" target="_blank" rel="noopener noreferrer"> click here</a> to report to Zio Health.</p>
         <br/>
-        <p>Last Updated 23rd Aug 2020</p>
+        <p>Last Updated 5th Sept 2020</p>
       </div>
     );
   }

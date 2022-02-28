@@ -1,13 +1,13 @@
 1. Update "Last Updated" string on homepage
 
 2. Do a regular commit/push to bitbucket
-git remote set-url origin https://sambucca@bitbucket.org/sambucca/zio_setup_sam.git
+git remote set-url origin git@github.com:zio-health/ziostat-setup-app.git
 
-3. set url to github origin
+3. set url to github origin - we are doing this switch so we can host it on a personal github
 git remote set-url origin https://github.com/samzio/zio-setup-app.git
 
 4. deploy!
 yarn run deploy
 
 5. reset origin
-git remote set-url origin https://sambucca@bitbucket.org/sambucca/zio_setup_sam.git
+git remote set-url origin git@github.com:zio-health/ziostat-setup-app.git

@@ -10,4 +10,4 @@ git remote set-url origin https://github.com/samzio/zio-setup-app.git
 yarn run deploy
 
 5. reset origin
-git remote set-url origin https://sambucca@bitbucket.org/sambucca/zio_setup_sam.gitW
+git remote set-url origin https://sambucca@bitbucket.org/sambucca/zio_setup_sam.git
